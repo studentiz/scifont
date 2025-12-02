@@ -1,19 +1,18 @@
 Metadata-Version: 2.4
 Name: scifont
-Version: 0.1.0
+Version: 0.1.3
 Summary: Force publication-quality, editable fonts in Matplotlib figures.
-Home-page: https://github.com/scifont/scifont
-Author: scifont contributors
-Author-email: 
-License: MIT
-Project-URL: Homepage, https://github.com/scifont/scifont
-Project-URL: Repository, https://github.com/scifont/scifont
-Project-URL: Issues, https://github.com/scifont/scifont/issues
+Home-page: https://github.com/studentiz/scifont
+Author: studentiz
+Author-email: studentiz <studentiz@live.com>
+License-Expression: MIT
+Project-URL: Homepage, https://github.com/studentiz/scifont
+Project-URL: Repository, https://github.com/studentiz/scifont
+Project-URL: Issues, https://github.com/studentiz/scifont/issues
 Keywords: matplotlib,fonts,scientific,publication,visualization
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Science/Research
 Classifier: Topic :: Scientific/Engineering :: Visualization
-Classifier: License :: OSI Approved :: MIT License
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
@@ -26,6 +25,7 @@ Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: matplotlib>=3.3.0
+Dynamic: author
 Dynamic: home-page
 Dynamic: license-file
 Dynamic: requires-python
@@ -40,6 +40,7 @@ Dynamic: requires-python
 
 ## 🚀 Key Features
 
+*   **Smart Font Selection**: Automatically prioritizes system fonts (Arial, Helvetica, Times New Roman) when available. Falls back to bundled open-source fonts (Arimo, Tinos) only when system fonts are missing. This ensures optimal performance and user preference while maintaining compatibility.
 *   **Bundled Open-Source Fonts**: We ship with **Arimo** and **Tinos** (Apache 2.0 Licensed). These are **metric-compatible** alternatives to Arial and Times New Roman. They are legally safe to distribute and use anywhere.
 *   **Metric-Compatible**: Arimo has the exact same character widths and spacing as Arial. Tinos matches Times New Roman. Your layout will remain identical to the proprietary versions.
 *   **Editable Vector Graphics**: Automatically configures Matplotlib to export PDFs as `Type 42` objects and SVGs as `<text>` tags. Text remains editable in downstream vector software.
@@ -53,7 +54,7 @@ pip install scifont
 
 *(Or if installing from source)*
 ```bash
-git clone https://github.com/yourusername/scifont.git
+git clone https://github.com/studentiz/scifont.git
 cd scifont
 pip install .
 ```
@@ -73,7 +74,7 @@ scifont.use('nature')
 plt.figure(figsize=(4, 3))
 plt.plot([1, 2, 3], [4, 5, 6], label='Data')
 
-# The font is now Arimo (Arial-compatible)
+# The font will be Arial/Helvetica if available, otherwise Arimo (Arial-compatible)
 plt.title("Editable Text in Nature Style")
 plt.xlabel("Time (s)")
 plt.ylabel("Velocity (m/s)")
@@ -90,23 +91,29 @@ plt.savefig("figure.svg")
 
 `scifont` adjusts font families, sizes, and line widths according to specific journal guidelines (2025 standards).
 
-| Style Argument | Target Font Family | Open-Source Font Used | Base Font Size | Target Journals |
-| :--- | :--- | :--- | :--- | :--- |
-| `'nature'` | Sans-serif | **Arimo** (matches Arial) | 7 pt | *Nature, Nature Comms, Scientific Reports* |
-| `'cell'` | Sans-serif | **Arimo** (matches Arial) | 8 pt | *Cell, Molecular Cell, Neuron* |
-| `'science'`| Sans-serif | **Arimo** (matches Arial) | 9 pt | *Science, Science Advances* |
-| `'ieee'` | Serif | **Tinos** (matches Times New Roman) | 8 pt | *IEEE Transactions, Phys. Rev. Lett.* |
+| Style Argument | Target Font Family | Primary Font (if available) | Fallback Font | Base Font Size | Target Journals |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `'nature'` | Sans-serif | **Arial/Helvetica** | **Arimo** (matches Arial) | 7 pt | *Nature, Nature Comms, Scientific Reports* |
+| `'cell'` | Sans-serif | **Arial/Helvetica** | **Arimo** (matches Arial) | 8 pt | *Cell, Molecular Cell, Neuron* |
+| `'science'`| Sans-serif | **Arial/Helvetica** | **Arimo** (matches Arial) | 9 pt | *Science, Science Advances* |
+| `'ieee'` | Serif | **Times New Roman/Times** | **Tinos** (matches Times New Roman) | 8 pt | *IEEE Transactions, Phys. Rev. Lett.* |
 
 *Note: You can override any setting (e.g., font size) using standard `plt.rcParams` after calling `scifont.use()`.*
 
-## 🛡️ Why Open Source Fonts? (The Legal Aspect)
+## 🛡️ Smart Font Selection & Legal Compliance
 
+**Font Selection Strategy:**
+`scifont` intelligently selects fonts based on availability:
+1. **System Fonts First**: If Arial, Helvetica, or Times New Roman are available on your system, they will be used automatically. This provides the best performance and respects user preferences.
+2. **Automatic Fallback**: If system fonts are missing (common in Docker/Linux environments), `scifont` automatically falls back to bundled open-source fonts (Arimo/Tinos).
+
+**Why Bundle Open-Source Fonts?**
 Many researchers are unaware that **Arial** and **Times New Roman** are proprietary fonts owned by Monotype.
 1.  **Distribution**: It is illegal to bundle `arial.ttf` inside a Python package and distribute it without a costly license.
-2.  **Reproducibility**: Reliance on system fonts leads to inconsistencies. A plot rendered on macOS (with Arial) looks different on Ubuntu (without Arial).
+2.  **Reproducibility**: Reliance on system fonts alone leads to inconsistencies. A plot rendered on macOS (with Arial) looks different on Ubuntu (without Arial).
 
 **Our Solution:**
-We bundle **Arimo** and **Tinos**, developed by Steve Matteson for Google.
+We bundle **Arimo** and **Tinos**, developed by Steve Matteson for Google, as fallback fonts.
 *   **License**: **Apache License 2.0**. You can use, bundle, and distribute them freely.
 *   **Compatibility**: They are designed to be **Metric-Compatible** with Arial and Times New Roman. This means if you replace Arial with Arimo, the text takes up the *exact same space*. No line breaks will change; no labels will be cut off.
 
