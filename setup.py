@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="scifont",
-    version="0.1.3",
+    version="0.1.4",
     author="studentiz",
     author_email="studentiz@live.com",
     description="Force publication-quality, editable fonts in Matplotlib figures.",

@@ -9,9 +9,38 @@ from pathlib import Path
 import matplotlib.font_manager as fm
 from matplotlib import rcParams
 
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="[scifont] %(message)s")
+# Configure logging for scifont
+# Only show INFO and above, suppress DEBUG messages
+# Use force=True to override any existing configuration
+logging.basicConfig(
+    level=logging.WARNING,  # Set root logger to WARNING to suppress most messages
+    format="[scifont] %(message)s",
+    force=True
+)
+
+# Configure our specific logger
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+# Remove any existing handlers to avoid duplicates
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("[scifont] %(message)s"))
+    logger.addHandler(handler)
+logger.propagate = False  # Don't propagate to root logger to avoid double output
+
+# Suppress Matplotlib and fontTools loggers completely
+# These messages come from fontTools during PDF generation and are not useful
+# The font subsetting messages (like "maxp pruned", "cmap pruned") are debug info
+for logger_name in ['matplotlib', 'fontTools', 'fontTools.subset', 'fontTools.ttLib', 
+                    'matplotlib.font_manager', 'matplotlib.backends.backend_pdf']:
+    try:
+        other_logger = logging.getLogger(logger_name)
+        other_logger.setLevel(logging.ERROR)  # Only show ERROR level
+        other_logger.propagate = False  # Don't propagate to root
+        # Remove handlers to prevent output
+        other_logger.handlers = []
+    except:
+        pass
 
 # Constants
 PACKAGE_DIR = Path(__file__).parent
@@ -103,8 +132,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             # System fonts not available, register bundled Arimo
             _register_bundled_fonts()
             logger.info("System fonts (Arial/Helvetica) not found. Using bundled Arimo font.")
-        else:
-            logger.debug("System fonts (Arial/Helvetica) available. Using system fonts.")
+        # No message needed when system fonts are available (silent success)
     
     # For serif styles (ieee)
     elif style == 'ieee':
@@ -113,8 +141,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             # System fonts not available, register bundled Tinos
             _register_bundled_fonts()
             logger.info("System fonts (Times New Roman/Times) not found. Using bundled Tinos font.")
-        else:
-            logger.debug("System fonts (Times New Roman/Times) available. Using system fonts.")
+        # No message needed when system fonts are available (silent success)
     
     # For unknown styles, register bundled fonts as fallback
     else:
@@ -149,7 +176,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         rcParams['grid.linewidth'] = 0.5
         rcParams['lines.linewidth'] = 1.0
         
-        logger.info(f"Applied 'Nature' style ({font_info}/Sans-serif, 7pt base).")
+        # Only log when using fallback font, otherwise silent success
+        if font_info == "Arimo":
+            logger.info(f"Applied 'Nature' style ({font_info}/Sans-serif, 7pt base).")
 
     elif style == 'cell':
         # Cell Guidelines: Sans-serif, 6-8pt.
@@ -168,7 +197,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         rcParams['legend.fontsize'] = 7
         rcParams['axes.linewidth'] = 1.0
         
-        logger.info(f"Applied 'Cell' style ({font_info}/Sans-serif, 8pt base).")
+        # Only log when using fallback font, otherwise silent success
+        if font_info == "Arimo":
+            logger.info(f"Applied 'Cell' style ({font_info}/Sans-serif, 8pt base).")
 
     elif style == 'science':
         # Science Guidelines: Sans-serif, similar to Nature but slightly larger.
@@ -186,7 +217,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         rcParams['ytick.labelsize'] = 8
         rcParams['legend.fontsize'] = 8
         
-        logger.info(f"Applied 'Science' style ({font_info}/Sans-serif, 8-9pt base).")
+        # Only log when using fallback font, otherwise silent success
+        if font_info == "Arimo":
+            logger.info(f"Applied 'Science' style ({font_info}/Sans-serif, 8-9pt base).")
 
     elif style == 'ieee':
         # IEEE Guidelines: Serif (Times), ~8pt.
@@ -209,7 +242,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         rcParams['grid.alpha'] = 0.4
         rcParams['grid.linestyle'] = '--'
         
-        logger.info(f"Applied 'IEEE' style ({font_info}/Serif, 8pt base).")
+        # Only log when using fallback font, otherwise silent success
+        if font_info == "Tinos":
+            logger.info(f"Applied 'IEEE' style ({font_info}/Serif, 8pt base).")
 
     else:
         # Default fallback
