@@ -14,6 +14,8 @@
 
 3. **手动配置期刊样式太麻烦**：每个期刊都有特定的字体和字号要求。你花几个小时调 Matplotlib 的 `rcParams` 来匹配 Nature 的要求，投稿到 Science 或 IEEE 时又要全部重来一遍。
 
+4. **中文显示问题**：在图表中使用中文时，如果使用期刊推荐的英文字体（如 Arial、Times New Roman），中文部分会显示为"口口口"或方块，因为这些字体不支持中文字符。
+
 ## 解决方案
 
 `scifont` 用一行代码解决这三个问题：
@@ -27,6 +29,7 @@ scifont.use('nature')  # 搞定！
 - ✅ 系统有字体（Arial、Helvetica、Times New Roman）就用系统的，没有就无缝切换到兼容的开源字体（Arimo/Tinos）
 - ✅ 配置 Matplotlib 导出可编辑的文本到 PDF/SVG 文件，在 Adobe Illustrator 里改错别字不用重画
 - ✅ 一行代码搞定 Nature、Science、Cell、IEEE 等期刊的样式要求——再也不用手动调 `rcParams` 了
+- ✅ 支持中文显示：使用 `scifont.use('zh')` 自动使用系统中可用的中文字体，确保中文和英文都能正确显示
 
 ## 🚀 核心功能
 
@@ -53,6 +56,8 @@ pip install .
 
 ## ⚡ 快速开始
 
+### 英文图表（期刊样式）
+
 ```python
 import matplotlib.pyplot as plt
 import scifont
@@ -74,6 +79,33 @@ plt.savefig("figure.pdf")
 plt.savefig("figure.svg")
 ```
 
+### 中文图表
+
+如果你的图表中包含中文内容，使用 `'zh'` 样式可以确保中文正确显示：
+
+```python
+import matplotlib.pyplot as plt
+import scifont
+
+# 使用中文字体样式
+scifont.use('zh')
+
+# 正常画图，可以包含中文
+plt.figure(figsize=(4, 3))
+plt.plot([1, 2, 3], [4, 5, 6], label='数据')
+plt.title("示例图表")
+plt.xlabel("时间 (秒)")
+plt.ylabel("速度 (米/秒)")
+plt.legend()
+
+# 保存 - 中文和英文都能正确显示！
+plt.tight_layout()
+plt.savefig("figure.pdf")
+plt.savefig("figure.svg")
+```
+
+`scifont.use('zh')` 会自动检测系统中可用的中文字体（如 Microsoft YaHei、PingFang SC、Noto Sans CJK SC 等），并将其设置为主要字体。由于大多数中文字体也支持英文，所以英文和中文都能正确显示。
+
 ## 📖 支持的期刊样式
 
 | 样式 | 字体系列 | 主要字体 | 备用字体 | 基础字号 | 目标期刊 |
@@ -82,6 +114,9 @@ plt.savefig("figure.svg")
 | `'cell'` | 无衬线 | Arial/Helvetica | Arimo | 8 pt | Cell, Molecular Cell, Neuron |
 | `'science'`| 无衬线 | Arial/Helvetica | Arimo | 8 pt | Science, Science Advances |
 | `'ieee'` | 衬线 | Times New Roman/Times | Tinos | 8 pt | IEEE Transactions, Phys. Rev. Lett. |
+| `'zh'` | 无衬线 | 系统可用中文字体 | DejaVu Sans | 8 pt | 包含中文内容的图表 |
+
+*注意：`'zh'` 样式会自动检测系统中可用的中文字体（如 Microsoft YaHei、PingFang SC、Noto Sans CJK SC 等）。如果系统中没有中文字体，会给出警告并使用 DejaVu Sans 作为回退。*
 
 *注意：调用 `scifont.use()` 后，你仍然可以用 `plt.rcParams` 覆盖任何设置。*
 

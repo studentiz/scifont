@@ -55,6 +55,48 @@ def _clear_font_cache() -> None:
     """Clear font availability cache when fonts are registered."""
     _font_availability_cache.clear()
 
+def _get_chinese_fonts() -> list:
+    """
+    Get a list of Chinese fonts available on the system.
+    Returns fonts in order of preference for each platform.
+    
+    Returns
+    -------
+    list
+        List of Chinese font names that are available on the system.
+        Returns empty list if no Chinese fonts are found.
+    """
+    # Common Chinese fonts by platform
+    # Order matters: check most preferred fonts first
+    chinese_font_candidates = [
+        # Windows
+        'Microsoft YaHei',      # 微软雅黑 (most common on Windows)
+        'SimHei',              # 黑体
+        'SimSun',              # 宋体
+        'KaiTi',               # 楷体
+        # macOS
+        'PingFang SC',         # 苹方-简 (most common on macOS)
+        'STHeiti',             # 华文黑体
+        'STSong',              # 华文宋体
+        'Arial Unicode MS',    # Supports Chinese (if available)
+        # Linux
+        'Noto Sans CJK SC',    # Google Noto (common on Linux)
+        'Source Han Sans SC',  # Adobe Source Han Sans
+        'WenQuanYi Micro Hei', # 文泉驿微米黑
+        'WenQuanYi Zen Hei',   # 文泉驿正黑
+    ]
+    
+    available_chinese_fonts = []
+    for font_name in chinese_font_candidates:
+        if _check_font_available([font_name]):
+            available_chinese_fonts.append(font_name)
+            # Return up to 2 fonts for better fallback, but keep the list manageable
+            if len(available_chinese_fonts) >= 2:
+                break
+    
+    return available_chinese_fonts
+
+
 def _check_font_available(font_names: list) -> bool:
     """
     Check if any of the specified fonts are available in the system.
@@ -198,6 +240,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         - 'cell': Sans-serif (Arial/Arimo), 6-8pt.
         - 'ieee': Serif (Times New Roman/Tinos), 8pt (Default for Engineering/Physics).
         - 'science': Sans-serif (Arial/Arimo), 7-9pt.
+        - 'zh': Chinese font style. Uses available Chinese fonts for both Chinese and English text.
     dpi : int
         Resolution for raster outputs (default: 300). Must be between 50 and 2000.
     
@@ -229,7 +272,13 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
     system_fonts_available = False
     font_family_needed = None
     
-    if style in ['nature', 'cell', 'science']:
+    if style == 'zh':
+        # Chinese style: use Chinese fonts directly
+        font_family_needed = 'sans-serif'  # Most Chinese fonts are sans-serif
+        # No need to check system fonts, we'll use Chinese fonts directly
+        pass
+    
+    elif style in ['nature', 'cell', 'science']:
         # Sans-serif styles need Arial/Helvetica or Arimo
         font_family_needed = 'sans-serif'
         system_fonts_available = _check_font_available(['Arial', 'Helvetica'])
@@ -270,10 +319,34 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
     # 4. Apply Journal-Specific Settings
     # Use the font availability result from step 1 (after potential registration)
     try:
-        if style == 'nature':
+        if style == 'zh':
+            # Chinese style: use Chinese fonts directly
+            chinese_fonts = _get_chinese_fonts()
+            if not chinese_fonts:
+                logger.warning("No Chinese fonts found on the system. Chinese text may not display correctly.")
+                # Fallback to DejaVu Sans as last resort
+                rcParams['font.family'] = 'sans-serif'
+                rcParams['font.sans-serif'] = ['DejaVu Sans', 'sans-serif']
+            else:
+                # Use Chinese fonts as primary fonts
+                # Most Chinese fonts also support English, so this works for both
+                rcParams['font.family'] = 'sans-serif'
+                rcParams['font.sans-serif'] = chinese_fonts + ['DejaVu Sans', 'sans-serif']
+                logger.info(f"Applied 'Chinese' style ({chinese_fonts[0]}/Sans-serif, 8pt base).")
+            
+            # Use similar settings to 'cell' style for readability
+            rcParams['font.size'] = 8
+            rcParams['axes.labelsize'] = 9
+            rcParams['xtick.labelsize'] = 8
+            rcParams['ytick.labelsize'] = 8
+            rcParams['legend.fontsize'] = 7
+            rcParams['axes.linewidth'] = 1.0
+        
+        elif style == 'nature':
             # Nature Guidelines: Sans-serif, 5-7pt.
             # Use the font availability determined in step 1
             rcParams['font.family'] = 'sans-serif'
+            
             if system_fonts_available:
                 rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'Arimo', 'DejaVu Sans']
                 font_info = "Arial/Helvetica"
@@ -304,6 +377,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         elif style == 'cell':
             # Cell Guidelines: Sans-serif, 6-8pt.
             rcParams['font.family'] = 'sans-serif'
+            
             if system_fonts_available:
                 rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'Arimo', 'DejaVu Sans']
                 font_info = "Arial/Helvetica"
@@ -330,6 +404,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         elif style == 'science':
             # Science Guidelines: Sans-serif, similar to Nature but slightly larger.
             rcParams['font.family'] = 'sans-serif'
+            
             if system_fonts_available:
                 rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'Arimo', 'DejaVu Sans']
                 font_info = "Arial/Helvetica"
@@ -355,6 +430,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         elif style == 'ieee':
             # IEEE Guidelines: Serif (Times), ~8pt.
             rcParams['font.family'] = 'serif'
+            
             if system_fonts_available:
                 rcParams['font.serif'] = ['Times New Roman', 'Times', 'Tinos', 'DejaVu Serif']
                 font_info = "Times New Roman/Times"
@@ -385,6 +461,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         else:
             # Default fallback for unknown styles
             rcParams['font.family'] = 'sans-serif'
+            
             if system_fonts_available:
                 rcParams['font.sans-serif'] = ['Arial', 'Helvetica', 'Arimo', 'sans-serif']
             else:
@@ -392,6 +469,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
                     rcParams['font.sans-serif'] = ['Arimo', 'sans-serif']
                 else:
                     rcParams['font.sans-serif'] = ['sans-serif']
+            
             logger.warning(f"Unknown style '{style}'. Loaded fonts but defaulted to basic settings.")
     
     except KeyError as e:
