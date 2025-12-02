@@ -96,7 +96,6 @@ def _get_chinese_fonts() -> list:
     
     return available_chinese_fonts
 
-
 def _check_font_available(font_names: list) -> bool:
     """
     Check if any of the specified fonts are available in the system.
@@ -228,6 +227,41 @@ def _configure_vector_output() -> None:
     # SVG: Do not convert text to paths
     rcParams['svg.fonttype'] = 'none'
 
+def _configure_jupyter_retina() -> None:
+    """
+    Configure high-resolution display for Jupyter/IPython environments.
+    Sets InlineBackend.figure_format to 'retina' if running in Jupyter notebook.
+    This improves figure quality on high-resolution displays (e.g., Retina screens).
+    """
+    try:
+        # Check if we're in IPython/Jupyter environment
+        try:
+            from IPython import get_ipython
+            ipython = get_ipython()
+        except ImportError:
+            # IPython not available, skip
+            return
+        
+        if ipython is None:
+            # Not in IPython environment
+            return
+        
+        # Check if we're in a Jupyter notebook (has kernel attribute)
+        # This distinguishes notebooks from IPython shell
+        if hasattr(ipython, 'kernel') and ipython.kernel is not None:
+            # We're in a Jupyter notebook - enable retina display
+            try:
+                from IPython.display import set_matplotlib_formats
+                set_matplotlib_formats('retina')
+            except (ImportError, ValueError):
+                # If set_matplotlib_formats is not available or retina is not supported,
+                # silently skip - this is a nice-to-have feature
+                pass
+    except Exception:
+        # Silently fail if anything goes wrong - this is a nice-to-have feature
+        # We don't want to break scifont if IPython detection fails
+        pass
+
 def use(style: str = 'nature', dpi: int = 300) -> None:
     """
     Apply a specific scientific publication style to Matplotlib.
@@ -268,19 +302,15 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         raise ValueError(f"dpi must be between 50 and 2000, got {dpi}")
     
     # 1. Check system fonts and register bundled fonts only if needed
-    # Determine which font family is needed and check availability
     system_fonts_available = False
-    font_family_needed = None
     
     if style == 'zh':
         # Chinese style: use Chinese fonts directly
-        font_family_needed = 'sans-serif'  # Most Chinese fonts are sans-serif
         # No need to check system fonts, we'll use Chinese fonts directly
         pass
     
     elif style in ['nature', 'cell', 'science']:
         # Sans-serif styles need Arial/Helvetica or Arimo
-        font_family_needed = 'sans-serif'
         system_fonts_available = _check_font_available(['Arial', 'Helvetica'])
         if not system_fonts_available:
             _register_bundled_fonts('sans-serif')  # Only register Arimo
@@ -288,7 +318,6 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
     
     elif style == 'ieee':
         # Serif styles need Times New Roman/Times or Tinos
-        font_family_needed = 'serif'
         system_fonts_available = _check_font_available(['Times New Roman', 'Times'])
         if not system_fonts_available:
             _register_bundled_fonts('serif')  # Only register Tinos
@@ -296,7 +325,6 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
     
     else:
         # Unknown styles: register all fonts as fallback
-        font_family_needed = 'sans-serif'  # Default to sans-serif
         system_fonts_available = _check_font_available(['Arial', 'Helvetica'])
         if not system_fonts_available:
             _register_bundled_fonts('all')  # Register all fonts
@@ -307,11 +335,32 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
     except Exception as e:
         logger.warning(f"Failed to configure vector output settings: {e}")
     
+    # 2.5. Configure Jupyter/IPython retina display (if applicable)
+    _configure_jupyter_retina()
+    
     # 3. Base Configuration
     try:
         rcParams['figure.dpi'] = dpi
         rcParams['savefig.dpi'] = dpi
         rcParams['axes.unicode_minus'] = False  # Use hyphen instead of minus sign glyph
+        
+        # Scientific publication defaults
+        # Disable grid by default (most journals prefer no grid)
+        rcParams['axes.grid'] = False
+        
+        # Set tick direction inward for cleaner look
+        rcParams['xtick.direction'] = 'in'
+        rcParams['ytick.direction'] = 'in'
+        
+        # Set tick length (in points) - moderate length for clarity
+        rcParams['xtick.major.size'] = 3.5
+        rcParams['ytick.major.size'] = 3.5
+        rcParams['xtick.minor.size'] = 2.0
+        rcParams['ytick.minor.size'] = 2.0
+        
+        # Color cycle: matplotlib's default 'tab10' is colorblind-friendly
+        # Users can override with plt.rcParams['axes.prop_cycle'] if needed
+        
     except Exception as e:
         logger.error(f"Failed to set base configuration: {e}")
         raise
@@ -340,7 +389,10 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             rcParams['xtick.labelsize'] = 8
             rcParams['ytick.labelsize'] = 8
             rcParams['legend.fontsize'] = 7
-            rcParams['axes.linewidth'] = 1.0
+            # Line widths for Chinese style
+            rcParams['axes.linewidth'] = 1.0  # Standard axes width
+            rcParams['lines.linewidth'] = 1.0  # Standard data line width
+            # Grid disabled by default
         
         elif style == 'nature':
             # Nature Guidelines: Sans-serif, 5-7pt.
@@ -366,9 +418,10 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             rcParams['xtick.labelsize'] = 7  # Increased, now matches base font size
             rcParams['ytick.labelsize'] = 7  # Increased, now matches base font size
             rcParams['legend.fontsize'] = 6
-            rcParams['axes.linewidth'] = 0.5
-            rcParams['grid.linewidth'] = 0.5
-            rcParams['lines.linewidth'] = 1.0
+            # Line widths for Nature style (thin axes, standard data lines)
+            rcParams['axes.linewidth'] = 0.5  # Thin axes for clean look
+            rcParams['lines.linewidth'] = 1.0  # Standard data line width
+            # Grid disabled by default (Nature typically doesn't use grid)
             
             # Only log when using fallback font, otherwise silent success
             if font_info == "Arimo":
@@ -395,7 +448,10 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             rcParams['xtick.labelsize'] = 8  # Increased, now matches base font size
             rcParams['ytick.labelsize'] = 8  # Increased, now matches base font size
             rcParams['legend.fontsize'] = 7
-            rcParams['axes.linewidth'] = 1.0
+            # Line widths for Cell style
+            rcParams['axes.linewidth'] = 1.0  # Standard axes width
+            rcParams['lines.linewidth'] = 1.0  # Standard data line width
+            # Grid disabled by default
             
             # Only log when using fallback font, otherwise silent success
             if font_info == "Arimo":
@@ -422,6 +478,10 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             rcParams['xtick.labelsize'] = 9  # Increased, maintains 1pt difference from axes labels
             rcParams['ytick.labelsize'] = 9  # Increased, maintains 1pt difference from axes labels
             rcParams['legend.fontsize'] = 8
+            # Line widths for Science style
+            rcParams['axes.linewidth'] = 1.0  # Standard axes width
+            rcParams['lines.linewidth'] = 1.0  # Standard data line width
+            # Grid disabled by default
             
             # Only log when using fallback font, otherwise silent success
             if font_info == "Arimo":
@@ -448,11 +508,14 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             rcParams['xtick.labelsize'] = 9  # Increased, matches axes labels for consistency
             rcParams['ytick.labelsize'] = 9  # Increased, matches axes labels for consistency
             rcParams['legend.fontsize'] = 8
-            
-            # IEEE figures often look better with grid
+            # Line widths for IEEE style
+            rcParams['axes.linewidth'] = 1.0  # Standard axes width
+            rcParams['lines.linewidth'] = 1.0  # Standard data line width
+            # IEEE figures often look better with subtle grid
             rcParams['axes.grid'] = True
-            rcParams['grid.alpha'] = 0.4
-            rcParams['grid.linestyle'] = '--'
+            rcParams['grid.alpha'] = 0.3  # More subtle grid (reduced from 0.4)
+            rcParams['grid.linewidth'] = 0.5  # Thin grid lines
+            rcParams['grid.linestyle'] = '--'  # Dashed grid
             
             # Only log when using fallback font, otherwise silent success
             if font_info == "Tinos":

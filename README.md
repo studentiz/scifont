@@ -38,6 +38,8 @@ scifont.use('nature')  # That's it!
 
 *   **Journal Presets**: One-line configuration for **Nature**, **Science**, **Cell**, and **IEEE** standards.
 
+*   **Publication-Ready Styling**: Automatically applies scientific publication best practices, including inward-facing ticks, appropriate line widths, and clean axis styling for professional-looking figures.
+
 ## 📦 Installation
 
 ```bash
@@ -92,6 +94,7 @@ plt.savefig("figure.svg")
 - ✅ Editable text in PDF/SVG files—fix typos in Adobe Illustrator without redrawing
 - ✅ Journal-compliant font and size settings for major journals
 - ✅ True cross-platform compatibility—same code works everywhere
+- ✅ Professional figure styling—automatic configuration of ticks, borders, and line widths for publication-ready appearance
 
 **What scifont doesn't do:**
 - ❌ It's not a design tool—you still need to adjust layout, colors, and aesthetics
