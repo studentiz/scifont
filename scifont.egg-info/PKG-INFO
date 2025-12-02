@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: scifont
-Version: 0.1.4
+Version: 0.1.5
 Summary: Force publication-quality, editable fonts in Matplotlib figures.
 Home-page: https://github.com/studentiz/scifont
 Author: studentiz

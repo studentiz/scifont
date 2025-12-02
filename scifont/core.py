@@ -145,7 +145,7 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
     
     # For unknown styles, register bundled fonts as fallback
     else:
-        _register_bundled_fonts()
+    _register_bundled_fonts()
     
     # 2. Ensure Editability
     _configure_vector_output()
@@ -168,9 +168,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             font_info = "Arimo"
         
         rcParams['font.size'] = 7
-        rcParams['axes.labelsize'] = 7
-        rcParams['xtick.labelsize'] = 6
-        rcParams['ytick.labelsize'] = 6
+        rcParams['axes.labelsize'] = 8  # Increased for better readability
+        rcParams['xtick.labelsize'] = 7  # Increased, now matches base font size
+        rcParams['ytick.labelsize'] = 7  # Increased, now matches base font size
         rcParams['legend.fontsize'] = 6
         rcParams['axes.linewidth'] = 0.5
         rcParams['grid.linewidth'] = 0.5
@@ -191,9 +191,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             font_info = "Arimo"
         
         rcParams['font.size'] = 8
-        rcParams['axes.labelsize'] = 8
-        rcParams['xtick.labelsize'] = 7
-        rcParams['ytick.labelsize'] = 7
+        rcParams['axes.labelsize'] = 9  # Increased for better readability
+        rcParams['xtick.labelsize'] = 8  # Increased, now matches base font size
+        rcParams['ytick.labelsize'] = 8  # Increased, now matches base font size
         rcParams['legend.fontsize'] = 7
         rcParams['axes.linewidth'] = 1.0
         
@@ -212,9 +212,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             font_info = "Arimo"
         
         rcParams['font.size'] = 8
-        rcParams['axes.labelsize'] = 9
-        rcParams['xtick.labelsize'] = 8
-        rcParams['ytick.labelsize'] = 8
+        rcParams['axes.labelsize'] = 10  # Increased for better readability
+        rcParams['xtick.labelsize'] = 9  # Increased, maintains 1pt difference from axes labels
+        rcParams['ytick.labelsize'] = 9  # Increased, maintains 1pt difference from axes labels
         rcParams['legend.fontsize'] = 8
         
         # Only log when using fallback font, otherwise silent success
@@ -232,9 +232,9 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
             font_info = "Tinos"
         
         rcParams['font.size'] = 8
-        rcParams['axes.labelsize'] = 8
-        rcParams['xtick.labelsize'] = 8
-        rcParams['ytick.labelsize'] = 8
+        rcParams['axes.labelsize'] = 9  # Increased for better readability
+        rcParams['xtick.labelsize'] = 9  # Increased, matches axes labels for consistency
+        rcParams['ytick.labelsize'] = 9  # Increased, matches axes labels for consistency
         rcParams['legend.fontsize'] = 8
         
         # IEEE figures often look better with grid
