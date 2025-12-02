@@ -6,13 +6,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="scifont",
-    version="0.1.0",
+    version="0.1.2",
     author="studentiz",
     author_email="studentiz@live.com",
     description="Force publication-quality, editable fonts in Matplotlib figures.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/scifont/scifont",
+    url="https://github.com/studentiz/scifont",
     packages=find_packages(),
     # CRITICAL: This ensures the 'fonts' folder is included in the wheel
     include_package_data=True,

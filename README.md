@@ -21,7 +21,7 @@ pip install scifont
 
 *(Or if installing from source)*
 ```bash
-git clone https://github.com/yourusername/scifont.git
+git clone https://github.com/studentiz/scifont.git
 cd scifont
 pip install .
 ```

@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "scifont"
-version = "0.1.0"
+version = "0.1.2"
 description = "Force publication-quality, editable fonts in Matplotlib figures."
 readme = "README.md"
 requires-python = ">=3.7"
-license = {text = "MIT"}
+license = "MIT"
 license-files = ["LICENSE"]
 authors = [
-    {name = "scifont contributors"}
+    {name = "studentiz", email = "studentiz@live.com"}
 ]
 keywords = ["matplotlib", "fonts", "scientific", "publication", "visualization"]
 classifiers = [
@@ -32,9 +32,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/scifont/scifont"
-Repository = "https://github.com/scifont/scifont"
-Issues = "https://github.com/scifont/scifont/issues"
+Homepage = "https://github.com/studentiz/scifont"
+Repository = "https://github.com/studentiz/scifont"
+Issues = "https://github.com/studentiz/scifont/issues"
 
 [tool.setuptools]
 packages = ["scifont"]
