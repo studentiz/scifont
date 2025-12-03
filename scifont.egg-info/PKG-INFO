@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: scifont
-Version: 0.1.8
+Version: 0.1.9
 Summary: Force publication-quality, editable fonts in Matplotlib figures.
 Home-page: https://github.com/studentiz/scifont
 Author: studentiz
@@ -139,9 +139,19 @@ Think of it as a solid foundation. One `scifont.use('nature')` call replaces doz
 
 **Arial** and **Times New Roman** are proprietary fonts owned by Monotype. It's illegal to bundle them in a Python package without a costly license. Also, relying on system fonts alone causes inconsistencies—a plot rendered on Windows or macOS (with Arial) looks different on Linux servers or Docker containers (without Arial).
 
-**Our solution:** We bundle **Arimo** and **Tinos** (developed by Steve Matteson for Google) as fallback fonts. They're:
-- **Apache License 2.0**: Free to use, bundle, and distribute
-- **Metric-compatible**: Identical character widths and spacing to Arial and Times New Roman. No layout changes when switching fonts.
+**Our solution:** We bundle open-source fonts as fallback fonts. They're:
+- **Free to use, bundle, and distribute**: All bundled fonts use permissive open-source licenses
+- **Metric-compatible**: Identical character widths and spacing to their proprietary counterparts. No layout changes when switching fonts.
+
+### Bundled Fonts and Licenses
+
+| Font | License | Purpose | Notes |
+| :--- | :--- | :--- | :--- |
+| **Arimo** | Apache License 2.0 | Sans-serif fallback for Arial/Helvetica | Developed by Steve Matteson for Google. Metric-compatible with Arial. |
+| **Tinos** | Apache License 2.0 | Serif fallback for Times New Roman/Times | Developed by Steve Matteson for Google. Metric-compatible with Times New Roman. |
+| **Noto Sans SC** | SIL Open Font License (OFL) 1.1 | Chinese font fallback | Developed by Google and Adobe. Supports Simplified Chinese characters. |
+
+All bundled fonts are freely available for commercial and non-commercial use, modification, and distribution under their respective licenses.
 
 ## 🔧 Technical Details
 
@@ -157,5 +167,16 @@ This ensures compatibility with Adobe Illustrator, CorelDRAW, and Inkscape.
 
 ## License
 
-The `scifont` code is distributed under the **MIT License**.  
-The bundled fonts (Arimo and Tinos) are distributed under the **Apache License, Version 2.0**.
+The `scifont` code is distributed under the **MIT License**.
+
+The bundled fonts are distributed under their respective open-source licenses:
+- **Arimo** and **Tinos**: **Apache License, Version 2.0**
+- **Noto Sans SC**: **SIL Open Font License (OFL) 1.1**
+
+## Disclaimer
+
+**Font Licensing**: All bundled fonts (Arimo, Tinos, and Noto Sans SC) are open-source and freely available for use, modification, and distribution under their respective licenses. However, users are responsible for ensuring compliance with these licenses in their specific use cases.
+
+**No Warranty**: This software is provided "as is" without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.
+
+**Political Neutrality**: The bundled fonts (particularly Noto Sans SC) are technical tools designed for text rendering and do not represent any political stance or affiliation. Users should ensure compliance with local laws and regulations when using these fonts in their jurisdictions.

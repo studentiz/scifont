@@ -55,6 +55,56 @@ def _clear_font_cache() -> None:
     """Clear font availability cache when fonts are registered."""
     _font_availability_cache.clear()
 
+def _get_bundled_notosanssc_name() -> str:
+    """
+    Get the actual font name of the bundled NotoSansSC font after registration.
+    First tries to read from the font file directly (most reliable), 
+    then falls back to searching in matplotlib's font manager.
+    
+    Returns
+    -------
+    str
+        The font name as registered in matplotlib, or None if not found.
+    """
+    # First, try to read the font name directly from the file
+    # This is the most reliable method and works even if font manager hasn't updated yet
+    notosanssc_path = FONT_DIR / "NotoSansSC-VariableFont_wght.ttf"
+    if notosanssc_path.exists():
+        font_name = _get_font_name_from_file(notosanssc_path)
+        if font_name:
+            # If we got a name from the file, use it directly
+            # The font should be registered by now, and even if font manager hasn't
+            # updated its list, matplotlib can still use the font by name
+            return font_name
+    
+    # Fallback: search in matplotlib's font manager
+    # This is useful if fontTools is not available or file reading failed
+    try:
+        if not hasattr(fm, 'fontManager') or fm.fontManager is None:
+            return None
+        
+        # Look for NotoSansSC in registered fonts
+        # The font name might be "Noto Sans SC", "Noto Sans SC Variable", etc.
+        notosanssc_candidates = [
+            'Noto Sans SC',
+            'Noto Sans SC Variable',
+            'Noto Sans SC Variable Font',
+            'NotoSansSC',
+        ]
+        
+        available_fonts = {f.name for f in fm.fontManager.ttflist}
+        for candidate in notosanssc_candidates:
+            if candidate in available_fonts:
+                return candidate
+        
+        # If exact match not found, try partial match
+        for font_name in available_fonts:
+            if 'noto' in font_name.lower() and 'sans' in font_name.lower() and 'sc' in font_name.lower():
+                return font_name
+    except Exception as e:
+        logger.debug(f"Could not find bundled NotoSansSC font name: {e}")
+    return None
+
 def _get_chinese_fonts() -> list:
     """
     Get a list of Chinese fonts available on the system.
@@ -146,9 +196,38 @@ def _check_font_available(font_names: list) -> bool:
         logger.error(f"Unexpected error checking font availability: {e}")
         return False
 
+def _get_font_name_from_file(font_path: Path) -> str:
+    """
+    Get the actual font name from a TTF file.
+    
+    Parameters
+    ----------
+    font_path : Path
+        Path to the font file.
+    
+    Returns
+    -------
+    str
+        The font name as registered in matplotlib, or None if not found.
+    """
+    try:
+        from fontTools.ttLib import TTFont
+        font = TTFont(str(font_path))
+        # Get the font family name from the name table
+        for record in font['name'].names:
+            if record.nameID == 1:  # Family name
+                return record.toUnicode()
+        # Fallback: try nameID 4 (Full font name)
+        for record in font['name'].names:
+            if record.nameID == 4:
+                return record.toUnicode()
+    except Exception as e:
+        logger.debug(f"Could not read font name from {font_path.name}: {e}")
+    return None
+
 def _register_bundled_fonts(font_family: str = 'all') -> None:
     """
-    Scans the internal 'fonts' directory and registers Arimo/Tinos 
+    Scans the internal 'fonts' directory and registers Arimo/Tinos/NotoSansSC 
     with Matplotlib's font manager dynamically.
     Only registers fonts if they haven't been registered already.
     
@@ -156,7 +235,8 @@ def _register_bundled_fonts(font_family: str = 'all') -> None:
     ----------
     font_family : str, optional
         Which font family to register: 'sans-serif' (Arimo only), 
-        'serif' (Tinos only), or 'all' (both). Default is 'all'.
+        'serif' (Tinos only), 'chinese' (NotoSansSC only), or 'all' (all fonts). 
+        Default is 'all'.
     """
     # Check if font directory exists
     if not FONT_DIR.exists():
@@ -173,8 +253,10 @@ def _register_bundled_fonts(font_family: str = 'all') -> None:
         font_prefixes = ['Arimo']
     elif font_family == 'serif':
         font_prefixes = ['Tinos']
+    elif font_family == 'chinese':
+        font_prefixes = ['NotoSansSC']
     else:  # 'all' or default
-        font_prefixes = ['Arimo', 'Tinos']
+        font_prefixes = ['Arimo', 'Tinos', 'NotoSansSC']
 
     registered_count = 0
     skipped_count = 0
@@ -305,9 +387,13 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
     system_fonts_available = False
     
     if style == 'zh':
-        # Chinese style: use Chinese fonts directly
-        # No need to check system fonts, we'll use Chinese fonts directly
-        pass
+        # Chinese style: check for system Chinese fonts first
+        # If none found, register and use bundled NotoSansSC
+        chinese_fonts_available = len(_get_chinese_fonts()) > 0
+        if not chinese_fonts_available:
+            # Register bundled NotoSansSC font
+            _register_bundled_fonts('chinese')
+            logger.info("No Chinese fonts found on the system. Using bundled NotoSansSC font.")
     
     elif style in ['nature', 'cell', 'science']:
         # Sans-serif styles need Arial/Helvetica or Arimo
@@ -366,18 +452,28 @@ def use(style: str = 'nature', dpi: int = 300) -> None:
         raise
 
     # 4. Apply Journal-Specific Settings
-    # Use the font availability result from step 1 (after potential registration)
+    # Note: All styles (including 'zh') inherit the base configuration from step 3,
+    # including tick direction ('in'), tick sizes, grid settings, and line widths.
+    # Style-specific settings below only override font and size-related parameters.
     try:
         if style == 'zh':
             # Chinese style: use Chinese fonts directly
             chinese_fonts = _get_chinese_fonts()
             if not chinese_fonts:
-                logger.warning("No Chinese fonts found on the system. Chinese text may not display correctly.")
-                # Fallback to DejaVu Sans as last resort
-                rcParams['font.family'] = 'sans-serif'
-                rcParams['font.sans-serif'] = ['DejaVu Sans', 'sans-serif']
+                # Try to use bundled NotoSansSC font
+                bundled_notosanssc = _get_bundled_notosanssc_name()
+                if bundled_notosanssc:
+                    # Use bundled NotoSansSC as primary font
+                    rcParams['font.family'] = 'sans-serif'
+                    rcParams['font.sans-serif'] = [bundled_notosanssc, 'DejaVu Sans', 'sans-serif']
+                    logger.info(f"Applied 'Chinese' style (bundled {bundled_notosanssc}/Sans-serif, 8pt base).")
+                else:
+                    # Last resort: fallback to DejaVu Sans (won't display Chinese correctly)
+                    logger.warning("No Chinese fonts found on the system and bundled NotoSansSC is not available. Chinese text may not display correctly.")
+                    rcParams['font.family'] = 'sans-serif'
+                    rcParams['font.sans-serif'] = ['DejaVu Sans', 'sans-serif']
             else:
-                # Use Chinese fonts as primary fonts
+                # Use system Chinese fonts as primary fonts
                 # Most Chinese fonts also support English, so this works for both
                 rcParams['font.family'] = 'sans-serif'
                 rcParams['font.sans-serif'] = chinese_fonts + ['DejaVu Sans', 'sans-serif']

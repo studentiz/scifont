@@ -18,6 +18,7 @@ scifont/fonts/Arimo-MediumItalic.ttf
 scifont/fonts/Arimo-Regular.ttf
 scifont/fonts/Arimo-SemiBold.ttf
 scifont/fonts/Arimo-SemiBoldItalic.ttf
+scifont/fonts/NotoSansSC-VariableFont_wght.ttf
 scifont/fonts/Tinos-Bold.ttf
 scifont/fonts/Tinos-BoldItalic.ttf
 scifont/fonts/Tinos-Italic.ttf

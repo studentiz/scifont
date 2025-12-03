@@ -116,9 +116,9 @@ plt.savefig("figure.svg")
 | `'cell'` | 无衬线 | Arial/Helvetica | Arimo | 8 pt | Cell, Molecular Cell, Neuron |
 | `'science'`| 无衬线 | Arial/Helvetica | Arimo | 8 pt | Science, Science Advances |
 | `'ieee'` | 衬线 | Times New Roman/Times | Tinos | 8 pt | IEEE Transactions, Phys. Rev. Lett. |
-| `'zh'` | 无衬线 | 系统可用中文字体 | DejaVu Sans | 8 pt | 包含中文内容的图表 |
+| `'zh'` | 无衬线 | 系统可用中文字体 | Noto Sans SC (打包) | 8 pt | 包含中文内容的图表 |
 
-*注意：`'zh'` 样式会自动检测系统中可用的中文字体（如 Microsoft YaHei、PingFang SC、Noto Sans CJK SC 等）。如果系统中没有中文字体，会给出警告并使用 DejaVu Sans 作为回退。*
+*注意：`'zh'` 样式会自动检测系统中可用的中文字体（如 Microsoft YaHei、PingFang SC、Noto Sans CJK SC 等）。如果系统中没有中文字体，会自动使用打包的 Noto Sans SC 字体，确保中文能够正确显示。*
 
 *注意：调用 `scifont.use()` 后，你仍然可以用 `plt.rcParams` 覆盖任何设置。*
 
@@ -142,9 +142,19 @@ plt.savefig("figure.svg")
 
 **Arial** 和 **Times New Roman** 是 Monotype 公司的专有字体。在没有昂贵许可证的情况下，把它们打包到 Python 包里分发是违法的。而且，只依赖系统字体会导致不一致——在 Windows 或 macOS（有 Arial）上渲染的图和在 Linux 服务器或 Docker 容器（没有 Arial）上看起来不一样。
 
-**我们的解决方案：** 我们打包了 **Arimo** 和 **Tinos**（由 Steve Matteson 为 Google 开发）作为备用字体。它们：
-- **Apache License 2.0**：可以自由使用、打包和分发
-- **度量兼容**：字符宽度和间距与 Arial 和 Times New Roman 完全一样。换字体时布局不会变。
+**我们的解决方案：** 我们打包了开源字体作为备用字体。它们：
+- **可自由使用、打包和分发**：所有打包的字体都使用宽松的开源许可证
+- **度量兼容**：字符宽度和间距与专有字体完全一样。换字体时布局不会变。
+
+### 打包字体及许可证
+
+| 字体 | 许可证 | 用途 | 说明 |
+| :--- | :--- | :--- | :--- |
+| **Arimo** | Apache License 2.0 | Arial/Helvetica 的无衬线备用字体 | 由 Steve Matteson 为 Google 开发。与 Arial 度量兼容。 |
+| **Tinos** | Apache License 2.0 | Times New Roman/Times 的衬线备用字体 | 由 Steve Matteson 为 Google 开发。与 Times New Roman 度量兼容。 |
+| **Noto Sans SC** | SIL Open Font License (OFL) 1.1 | 中文字体备用 | 由 Google 和 Adobe 联合开发。支持简体中文字符。 |
+
+所有打包的字体均可在其各自许可证下自由用于商业和非商业用途、修改和分发。
 
 ## 🔧 技术细节
 
@@ -160,5 +170,16 @@ plt.rcParams['svg.fonttype'] = 'none'  # 不要把文本转成路径
 
 ## 许可证
 
-`scifont` 代码在 **MIT 许可证**下分发。  
-打包的字体（Arimo 和 Tinos）在 **Apache License, Version 2.0** 下分发。
+`scifont` 代码在 **MIT 许可证**下分发。
+
+打包的字体在其各自的开源许可证下分发：
+- **Arimo** 和 **Tinos**：**Apache License, Version 2.0**
+- **Noto Sans SC**：**SIL Open Font License (OFL) 1.1**
+
+## 免责声明
+
+**字体许可**：所有打包的字体（Arimo、Tinos 和 Noto Sans SC）均为开源字体，可在其各自许可证下自由使用、修改和分发。但用户有责任确保在其特定使用场景中遵守这些许可证。
+
+**无担保**：本软件按"现状"提供，不提供任何明示或暗示的担保，包括但不限于对适销性、特定用途的适用性和非侵权性的担保。
+
+**政治中立性**：打包的字体（特别是 Noto Sans SC）是用于文本渲染的技术工具，不代表任何政治立场或关联。用户应确保在使用这些字体时遵守当地法律法规。
